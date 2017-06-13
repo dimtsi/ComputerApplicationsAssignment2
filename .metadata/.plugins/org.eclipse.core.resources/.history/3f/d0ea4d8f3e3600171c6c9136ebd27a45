@@ -1,0 +1,15 @@
+package assignment1;
+
+public class ConnectivityNode {
+	
+	private String ID;
+	
+	public ConnectivityNode (String id){
+		ID = id;
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+}

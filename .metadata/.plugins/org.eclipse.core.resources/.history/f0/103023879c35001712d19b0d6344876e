@@ -1,0 +1,31 @@
+package assignment1;
+
+public class Terminal {
+	
+	private String ID;
+	private String CondEq;
+	private String sqldrop = "DROP TABLE IF EXISTS Terminals";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS Terminals(ID INTEGER NOT NULL, rdfID VARCHAR(37), Conducting_Equipment VARCHAR(37) , PRIMARY KEY(ID))";
+	
+	public Terminal(String id, String ce){
+		ID = id;
+		CondEq = ce;
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetCondEq(){
+		return CondEq.substring(1);
+	}	
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}

@@ -1,0 +1,51 @@
+package assignment1;
+
+public class EnergyConsumer {
+	
+	private String ID;
+	private String name;
+	private String EqCont;
+	private double P;
+	private double Q;
+	private String sqldrop = "DROP TABLE IF EXISTS EnergyConsumers";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS EnergyConsumers(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(12) , Equipment_Container VARCHAR(37) , P DOUBLE , Q DOUBLE , PRIMARY KEY(ID))";
+	
+	public EnergyConsumer (String id, String nm, String eq, String p, String q ){
+		ID = id;
+		name = nm; 
+		EqCont = eq;
+		P = Double.parseDouble(p);
+		Q = Double.parseDouble(q);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public String GetEqCon(){
+		return EqCont.substring(1);
+	}
+	
+	public double GetP(){
+		return P;
+	}
+	
+	public double GetQ(){
+		return Q;
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+
+}
+
+

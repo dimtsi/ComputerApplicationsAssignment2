@@ -1,0 +1,37 @@
+package assignment1;
+
+public class Substation {
+	
+	private String ID;
+	private String SRegion;
+	private String name;
+	private String sqldrop = "DROP TABLE IF EXISTS Substations";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS Substations(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(12) , Region VARCHAR(37) , PRIMARY KEY(ID))";
+	
+	public Substation(String id, String nm, String sr){
+		ID = id;
+		name = nm;
+		SRegion = sr;
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}	
+	
+	public String GetRegion(){
+		return SRegion.substring(1);
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+
+}

@@ -1,0 +1,17 @@
+package assignment1;
+
+public class Translate {
+
+	private String type;
+	private int ID;
+	
+	public Translate(String type , int id){
+		this.type = type;
+		ID = id;
+	}
+	
+	public int GetID(){ return ID; }
+	
+	public String GetType(){ return type; }
+	
+}

@@ -1,0 +1,36 @@
+package assignment1;
+
+public class RegulatingControl {
+	private String ID;
+	private String name;
+	private double targetValue;
+	private String sqldrop = "DROP TABLE IF EXISTS RegulatingControls";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS RegulatingControls(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(8) , target_Value DOUBLE , PRIMARY KEY(ID))";
+	
+	public RegulatingControl(String id, String nm, String tV){
+		ID = id;
+		name = nm;
+		targetValue = Double.parseDouble(tV);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public double GetnV(){
+		return targetValue;
+	}
+
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}

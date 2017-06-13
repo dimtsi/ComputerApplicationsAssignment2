@@ -1,0 +1,23 @@
+package assignment1;
+
+import java.util.ArrayList;
+
+public class DiagonalElements {// a class saying that Bus (BusID) is connected  to the
+								// buses in the ArrayList (List) , through the (YList)
+	private int BusID;			//elements
+	private ArrayList<Complex[]> YList= new ArrayList<Complex[]>();
+	private ArrayList<Integer> List = new ArrayList<Integer>();
+	
+	public DiagonalElements(int id , ArrayList<Complex[]> Y , ArrayList<Integer> list){
+		BusID = id;
+		YList = Y;
+		List = list;
+	}
+		
+	public int GetBusID(){return BusID; }
+	
+	public ArrayList<Complex[]> GetYlist(){ return YList; }
+	
+	public ArrayList<Integer> GetList(){ return List; }
+	
+}

@@ -1,0 +1,37 @@
+package assignment1;
+
+public class ACLineSegment {
+	
+	private String ID;
+	private String BaseVoltage;
+	private double l , R , X , b , g;
+	Complex Y, ysh; 
+	
+	public ACLineSegment(String id, String bv , String L , String r , String x , String B , String G){
+		ID = id;
+		BaseVoltage = bv;
+		l = Double.parseDouble(L);
+		R = Double.parseDouble(r);
+		X = Double.parseDouble(x);
+		b = Double.parseDouble(B);
+		g = Double.parseDouble(G);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetBaseVoltage(){
+		return BaseVoltage.substring(1);
+	}	
+	
+	public Complex GetY(){
+		Complex Z = new Complex(l*R , l*X); 
+		return Z.reciprocal();
+	}
+	
+	public Complex Getysh(){
+		Complex y = new Complex (l*g/2 , l*b/2);
+		return y;
+	}
+}

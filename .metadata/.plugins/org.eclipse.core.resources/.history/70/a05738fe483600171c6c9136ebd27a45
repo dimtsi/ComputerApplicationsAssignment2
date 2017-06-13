@@ -1,0 +1,767 @@
+package assignment1;
+
+import java.sql.*;
+
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
+import java.util.ArrayList;
+
+public class Amain {
+	
+	// JDBC driver name and database URL
+	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+	static final String DB_URL = "jdbc:mysql://localhost/";
+	static final String DISABLE_SSL = "?useSSL=false";
+	// Database credentials
+	static final String USER = "root";
+	static final String PASS = "nv_egl_91"; // insert the password to SQL server
+	
+	public static void main(String[] args){
+	
+		//Reading files
+		FileRead file = new FileRead();
+		file.Parse();
+		file.doc.getDocumentElement().normalize();
+		file.doc1.getDocumentElement().normalize();
+		
+		//BaseVoltage
+		NodeList BVlList = file.doc.getElementsByTagName("cim:BaseVoltage");
+		ArrayList<BaseVoltage> BV = new ArrayList<BaseVoltage>();
+		
+		for (int i = 0; i < BVlList.getLength(); i++) {
+			BV.add(extractBV (BVlList.item(i)));	
+		}
+		
+		//Substations
+		NodeList SubList = file.doc.getElementsByTagName("cim:Substation");
+		ArrayList<Substation> Sub = new ArrayList<Substation>();
+		
+		for (int i = 0; i < SubList.getLength(); i++) {
+			Sub.add(extractSub (SubList.item(i)));	
+		}
+		
+		//Regulating Control
+		NodeList RCEQList = file.doc.getElementsByTagName("cim:RegulatingControl");
+		NodeList RCSSHList = file.doc1.getElementsByTagName("cim:RegulatingControl");
+		ArrayList<RegulatingControl>  RCntr = new ArrayList<RegulatingControl>();
+		
+		for (int i = 0; i < RCEQList.getLength(); i++) {
+			RCntr.add(extractRC (RCEQList.item(i), RCSSHList.item(i)));	
+		}
+		
+		//Voltage Level
+		NodeList VLList = file.doc.getElementsByTagName("cim:VoltageLevel");
+		ArrayList<VoltageLevel> VL = new ArrayList<VoltageLevel>();
+		
+		for (int i = 0; i < VLList.getLength(); i++) {
+			VL.add(extractVL (VLList.item(i)));	
+		}
+		
+		//Generating Unit
+		NodeList GUList = file.doc.getElementsByTagName("cim:GeneratingUnit");
+		ArrayList<GeneratingUnit> GU = new ArrayList<GeneratingUnit>();
+		
+		for (int i = 0; i < GUList.getLength(); i++){
+			GU.add(extractGU(GUList.item(i)));
+		}
+		
+		//Synchronous Machine
+		NodeList SMEQList = file.doc.getElementsByTagName("cim:SynchronousMachine");
+		NodeList SMSSHList = file.doc1.getElementsByTagName("cim:SynchronousMachine");
+		ArrayList<SynchronousMachine>  SynchM = new ArrayList<SynchronousMachine>();
+		
+		for (int i = 0; i < SMEQList.getLength(); i++) {
+			SynchM.add(extractSM (SMEQList.item(i), SMSSHList.item(i)));	
+		}
+		
+		//Power Transformer 
+		NodeList PTList = file.doc.getElementsByTagName("cim:PowerTransformer");
+		ArrayList<PowerTransformer>  PTrsf = new ArrayList<PowerTransformer>();
+		
+		for (int i = 0; i < PTList.getLength(); i++) {
+			PTrsf.add(extractPT (PTList.item(i)));	
+		}
+		
+		//Energy Consumer
+		NodeList EnCEQList = file.doc.getElementsByTagName("cim:EnergyConsumer");
+		NodeList EnCSSHList = file.doc1.getElementsByTagName("cim:EnergyConsumer");
+		ArrayList<EnergyConsumer>  EnCons = new ArrayList<EnergyConsumer>();
+		
+		for (int i = 0; i < EnCEQList.getLength(); i++) {
+			EnCons.add(extractEnC (EnCEQList.item(i), EnCSSHList.item(i)));	
+		}
+		
+		//Power Transformer End
+		NodeList PTEndList = file.doc.getElementsByTagName("cim:PowerTransformerEnd");
+		ArrayList<PowerTransformerEnd>  PTEnd = new ArrayList<PowerTransformerEnd>();
+		
+		for (int i = 0; i < PTEndList.getLength(); i++) {
+			PTEnd.add(extractPTend (PTEndList.item(i)));	
+		}
+		
+		//Breaker
+		NodeList BrEQList = file.doc.getElementsByTagName("cim:Breaker");
+		NodeList BrSSHList = file.doc1.getElementsByTagName("cim:Breaker");
+		ArrayList<Breaker>  Breakers = new ArrayList<Breaker>();
+		
+		for (int i = 0; i < BrEQList.getLength(); i++) {
+			Breakers.add(extractBreaker (BrEQList.item(i), BrSSHList.item(i)));	
+		}
+		
+		//Ratio Tap Changer
+		NodeList RTCList = file.doc.getElementsByTagName("cim:RatioTapChanger");
+		ArrayList<RatioTapChanger> RTC = new ArrayList<RatioTapChanger>();
+		
+		for (int i = 0; i < RTCList.getLength(); i++) {
+			RTC.add(extractRTC (RTCList.item(i)));	
+		}
+		
+		///// EXTRA INPUTS
+		
+		//Connectivity Node
+			NodeList CNList = file.doc.getElementsByTagName("cim:ConnectivityNode");
+			ArrayList<ConnectivityNode> CNs = new ArrayList<ConnectivityNode>();
+				
+			for (int i = 0; i < CNList.getLength(); i++) {
+				CNs.add(extractCN(CNList.item(i) , i));	
+			}
+		
+		//Terminal
+		NodeList TermList = file.doc.getElementsByTagName("cim:Terminal");
+		ArrayList<Terminal> Term = new ArrayList<Terminal>();
+		
+		for (int i = 0; i < TermList.getLength(); i++) {
+			Term.add(extractTerm (TermList.item(i) , i , CNs));	
+		}
+		
+		//ACLineSegment
+		NodeList ACLSList = file.doc.getElementsByTagName("cim:ACLineSegment");
+		ArrayList<ACLineSegment> ACLS = new ArrayList<ACLineSegment>();
+		
+		for (int i = 0; i < ACLSList.getLength(); i++) {
+			ACLS.add(extractACLS (ACLSList.item(i)));	
+		}
+		
+		//Busbar Section
+		NodeList BusBList = file.doc.getElementsByTagName("cim:BusbarSection");
+		ArrayList<BusbarSection> BBs = new ArrayList<BusbarSection>();
+				
+		for (int i = 0; i < BusBList.getLength(); i++) {
+			BBs.add(extractBusbar(BusBList.item(i) , i));	
+		}
+		
+		System.out.println(""+Term.get(9).GetConnNode());
+		//System.out.println(""+CNList.getLength());
+		
+		////////////////////////////////////////////////////////////
+		////////////////////////SQL/////////////////////////////////
+		////////////////////////////////////////////////////////////
+		Connection conn = null;
+		Statement stmt = null;
+		try{
+			// Register JDBC driver
+			Class.forName(JDBC_DRIVER);
+			// Open a connection
+			conn = DriverManager.getConnection(DB_URL+DISABLE_SSL, USER, PASS);
+
+			stmt = conn.createStatement();
+			String sql = "CREATE DATABASE IF NOT EXISTS PowerSystem"; // create database 
+			stmt.executeUpdate(sql);
+
+			// Connect to the created database powersystem and create table breaker
+			conn = DriverManager.getConnection(DB_URL + "PowerSystem"+DISABLE_SSL, USER, PASS);
+			sql = "USE PowerSystem";
+			stmt.executeUpdate(sql);
+				
+			//Base Voltage
+			stmt.executeUpdate(BV.get(0).DropTable()); // Drop table ACLineSegment if exists
+			stmt.executeUpdate(BV.get(0).CreateTable()); // create it if it does not exist
+			
+			for (int i = 0; i < BV.size(); i++){
+				String query = "INSERT INTO BaseVoltages (ID , rdfID , nominal_Voltage)" + "VALUES (? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, BV.get(i).GetID());
+			    preparedStmt.setDouble (3, BV.get(i).GetnV());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Breaker
+			stmt.executeUpdate(Breakers.get(0).DropTable()); 
+			stmt.executeUpdate(Breakers.get(0).CreateTable()); 
+			
+			for (int i = 0; i < BV.size(); i++){
+				String query = "INSERT INTO Breakers (ID , rdfID , name , status , Equipment_Container)" + "VALUES (? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, Breakers.get(i).GetID());
+			    preparedStmt.setString (3, Breakers.get(i).GetName());
+			    preparedStmt.setString (4, Breakers.get(i).GetState());
+			    preparedStmt.setString (5, Breakers.get(i).GetEqCon());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//EnergyConsumer
+			stmt.executeUpdate(EnCons.get(0).DropTable()); 
+			stmt.executeUpdate(EnCons.get(0).CreateTable()); 
+			
+			for (int i = 0; i < EnCons.size(); i++){
+				String query = "INSERT INTO EnergyConsumers (ID , rdfID , name , Equipment_Container , P , Q)" + "VALUES (? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, EnCons.get(i).GetID());
+			    preparedStmt.setString (3, EnCons.get(i).GetName());
+			    preparedStmt.setString (4, EnCons.get(i).GetEqCon());
+			    preparedStmt.setDouble (5, EnCons.get(i).GetP());
+			    preparedStmt.setDouble (6, EnCons.get(i).GetQ());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Generating Units
+			stmt.executeUpdate(GU.get(0).DropTable()); 
+			stmt.executeUpdate(GU.get(0).CreateTable()); 
+			
+			for (int i = 0; i < GU.size(); i++){
+				String query = "INSERT INTO GeneratingUnits (ID , rdfID , name , Equipment_Container , Pmax , Pmin)" + "VALUES (? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, GU.get(i).GetID());
+			    preparedStmt.setString (3, GU.get(i).GetName());
+			    preparedStmt.setString (4, GU.get(i).GetEqCont());
+			    preparedStmt.setDouble (5, GU.get(i).GetPmax());
+			    preparedStmt.setDouble (6, GU.get(i).GetPmin());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Power Transformers
+			stmt.executeUpdate(PTrsf.get(0).DropTable()); 
+			stmt.executeUpdate(PTrsf.get(0).CreateTable()); 
+			
+			for (int i = 0; i < PTrsf.size(); i++){
+				String query = "INSERT INTO PowerTransformers (ID , rdfID , name , Equipment_Container)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, PTrsf.get(i).GetID());
+			    preparedStmt.setString (3, PTrsf.get(i).GetName());
+			    preparedStmt.setString (4, PTrsf.get(i).GetEqCont());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Power Transformer End
+			stmt.executeUpdate(PTEnd.get(0).DropTable()); 
+			stmt.executeUpdate(PTEnd.get(0).CreateTable()); 
+			
+			for (int i = 0; i < PTEnd.size(); i++){
+				String query = "INSERT INTO PowerTransformerEnds (ID , rdfID , name , Transformer , Base_Voltage , r , x )" + "VALUES (? , ? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, PTEnd.get(i).GetID());
+			    preparedStmt.setString (3, PTEnd.get(i).GetName());
+			    preparedStmt.setString (4, PTEnd.get(i).GetTransf());
+			    preparedStmt.setString (5, PTEnd.get(i).GetBV());
+			    preparedStmt.setDouble (6, PTEnd.get(i).GetR());
+			    preparedStmt.setDouble (7, PTEnd.get(i).GetX());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Ratio Tap Changer
+			stmt.executeUpdate(RTC.get(0).DropTable()); 
+			stmt.executeUpdate(RTC.get(0).CreateTable()); 
+			
+			for (int i = 0; i < RTC.size(); i++){
+				String query = "INSERT INTO RatioTapChangers (ID , rdfID , name , step)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, RTC.get(i).GetID());
+			    preparedStmt.setString (3, RTC.get(i).GetName());
+			    preparedStmt.setInt (4, RTC.get(i).GetStep());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Regulating Control
+			stmt.executeUpdate(RCntr.get(0).DropTable()); 
+			stmt.executeUpdate(RCntr.get(0).CreateTable()); 
+			
+			for (int i = 0; i < RCntr.size(); i++){
+				String query = "INSERT INTO RegulatingControls (ID , rdfID , name , target_Value)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, RCntr.get(i).GetID());
+			    preparedStmt.setString (3, RCntr.get(i).GetName());
+			    preparedStmt.setDouble (4, RCntr.get(i).GetnV());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Synchronus Machine
+			stmt.executeUpdate(SynchM.get(0).DropTable()); 
+			stmt.executeUpdate(SynchM.get(0).CreateTable()); 
+			
+			for (int i = 0; i < SynchM.size(); i++){
+				String query = "INSERT INTO SynchronousMachines (ID , rdfID , name , Equipment_Container , Regulating_Control , Generating_Unit , Srated , P , Q)" + "VALUES (? , ? , ? , ? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, SynchM.get(i).GetID());
+			    preparedStmt.setString (3, SynchM.get(i).GetName());
+			    preparedStmt.setString (4, SynchM.get(i).GetEqCont());
+			    preparedStmt.setString (5, SynchM.get(i).GetRegCtrl());
+			    preparedStmt.setString (6, SynchM.get(i).GetRotMcGU());
+			    preparedStmt.setDouble (7, SynchM.get(i).GetSrated());
+			    preparedStmt.setDouble (8, SynchM.get(i).GetP());
+			    preparedStmt.setDouble (9, SynchM.get(i).GetQ());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Substation
+			stmt.executeUpdate(Sub.get(0).DropTable()); 
+			stmt.executeUpdate(Sub.get(0).CreateTable()); 
+			
+			for (int i = 0; i < Sub.size(); i++){
+				String query = "INSERT INTO Substations (ID , rdfID , name , Region)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, Sub.get(i).GetID());
+			    preparedStmt.setString (3, Sub.get(i).GetName());
+			    preparedStmt.setString (4, Sub.get(i).GetRegion());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Voltage Level
+			stmt.executeUpdate(VL.get(0).DropTable()); 
+			stmt.executeUpdate(VL.get(0).CreateTable()); 
+			
+			for (int i = 0; i < VL.size(); i++){
+				String query = "INSERT INTO VoltageLevels (ID , rdfID , name , substation , Base_Voltage)" + "VALUES (? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, VL.get(i).GetID());
+			    preparedStmt.setDouble (3, VL.get(i).GetName());
+			    preparedStmt.setString (4, VL.get(i).GetSub());
+			    preparedStmt.setString (5, VL.get(i).GetBV());
+			    preparedStmt.executeUpdate();
+			}
+			
+		}catch(SQLException se){
+			//Handle errors for JDBC
+			se.printStackTrace();
+		}catch(Exception e){
+			//Handle errors for Class.forName
+			e.printStackTrace();
+		}
+		
+	//////////////////////////////////////////////////////////////////
+	/////////////////////////////Ybus/////////////////////////////////
+	//////////////////////////////////////////////////////////////////
+		
+		
+	}
+	
+	
+	
+	public static BaseVoltage extractBV (Node node){
+		Element element = (Element) node;
+		
+		String  NV = null; 
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			NV = element.getElementsByTagName("cim:BaseVoltage.nominalVoltage").item(0).getTextContent();
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this program");
+		}
+	    
+		BaseVoltage x = new BaseVoltage(rdfID, NV);
+		return x;	
+	}
+	
+	public static Substation extractSub (Node node){
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String SR , name ;
+		SR = name = null;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			name = element.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:Substation.Region".equals(childNode.getNodeName())) {
+					Element element1 = (Element) childNode;
+					SR= element1.getAttribute("rdf:resource");
+	            }
+	        }
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this program");
+		}
+		
+		Substation x = new Substation (rdfID , name , SR);
+		return x;
+	}
+	
+	public static RegulatingControl extractRC (Node nodeEQ, Node nodeSSH){
+		Element element1 = (Element) nodeEQ;
+		Element element2 = (Element) nodeSSH;
+		
+		String name , targetValue;
+		name = targetValue = null;
+		String rdfID = element1.getAttribute("rdf:ID");
+		try{
+			name = element1.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+		
+			targetValue = element2.getElementsByTagName("cim:RegulatingControl.targetValue").item(0).getTextContent();
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this"); 
+		}
+		RegulatingControl x = new RegulatingControl(rdfID, name, targetValue);
+		return x;	
+	}	
+	
+	public static VoltageLevel extractVL (Node node){
+		
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String VS , BV , name;
+		VS = BV = name = null;
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			name = element.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+	            
+				if ("cim:VoltageLevel.Substation".equals(childNode.getNodeName())) {
+					Element element1 = (Element) childNode;
+	                VS= element1.getAttribute("rdf:resource");
+	            }
+	            if ("cim:VoltageLevel.BaseVoltage".equals(childNode.getNodeName())) {
+	            	Element element1 = (Element) childNode;
+	                BV= element1.getAttribute("rdf:resource");
+	            }
+	        }
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		VoltageLevel x = new VoltageLevel (rdfID , name , VS , BV );
+		return x;
+	}
+	
+	public static GeneratingUnit extractGU (Node node){
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String EqC , name ,Pmx , Pmn;
+		EqC = name = Pmx = Pmn = null;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			name = element.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+			Pmx = element.getElementsByTagName("cim:GeneratingUnit.maxOperatingP").item(0).getTextContent();
+			Pmn = element.getElementsByTagName("cim:GeneratingUnit.minOperatingP").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+	            	if ("cim:Equipment.EquipmentContainer".equals(childNode.getNodeName())) {
+	            		Element element1 = (Element) childNode;
+	            		EqC = element1.getAttribute("rdf:resource");
+	            	}
+	        }
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		GeneratingUnit x = new GeneratingUnit (rdfID , name , Pmx , Pmn , EqC);
+		return x;
+	}
+	
+	public static SynchronousMachine extractSM (Node nodeEQ , Node nodeSSH){
+		NodeList childList = nodeEQ.getChildNodes();
+		Element element1 = (Element) nodeEQ;
+		Element element2 = (Element) nodeSSH;
+	
+		String EqC , RC , RMGU , name , S , P , Q;
+		EqC = RC = RMGU = name = S = P = Q = null;
+		
+		String rdfID = element1.getAttribute("rdf:ID");
+		
+		try{
+			name = element1.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+			S = element1.getElementsByTagName("cim:RotatingMachine.ratedS").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:Equipment.EquipmentContainer".equals(childNode.getNodeName())) {
+	        	   	Element element3 = (Element) childNode;
+	        	   	EqC = element3.getAttribute("rdf:resource");
+				}
+	           	if ("cim:RegulatingCondEq.RegulatingControl".equals(childNode.getNodeName())) {
+	           		Element element3 = (Element) childNode;
+	           		RC = element3.getAttribute("rdf:resource");
+	           	}
+	           	if ("cim:RotatingMachine.GeneratingUnit".equals(childNode.getNodeName())) {
+	           		Element element3 = (Element) childNode;
+	           		RMGU = element3.getAttribute("rdf:resource");
+	            }
+	        }
+			
+			P = element2.getElementsByTagName("cim:RotatingMachine.p").item(0).getTextContent();
+			Q = element2.getElementsByTagName("cim:RotatingMachine.q").item(0).getTextContent();
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		SynchronousMachine x = new SynchronousMachine (rdfID , name , EqC , RC , RMGU , S , P , Q);
+		return x;
+	}
+
+	public static PowerTransformer extractPT (Node node){
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String EqC ,name;
+		EqC = name = null;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			name = element.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:Equipment.EquipmentContainer".equals(childNode.getNodeName())) {
+					Element element1 = (Element) childNode;
+					EqC= element1.getAttribute("rdf:resource");
+	            }
+	        }
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		PowerTransformer x = new PowerTransformer (rdfID , name , EqC);
+		return x;
+	}
+
+	public static EnergyConsumer extractEnC (Node nodeEQ , Node nodeSSH){
+		NodeList childList = nodeEQ.getChildNodes();
+		Element element1 = (Element) nodeEQ;
+		Element element2 = (Element) nodeSSH;
+		
+		String EqC , name ,P , Q;
+		EqC = name = P = Q = null;
+		
+		String rdfID = element1.getAttribute("rdf:ID");
+		
+		try{
+			name = element1.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:Equipment.EquipmentContainer".equals(childNode.getNodeName())) {
+					Element element3 = (Element) childNode;
+					EqC = element3.getAttribute("rdf:resource");
+				} 
+	        }
+			P = element2.getElementsByTagName("cim:EnergyConsumer.p").item(0).getTextContent();
+			Q = element2.getElementsByTagName("cim:EnergyConsumer.q").item(0).getTextContent();
+			
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		EnergyConsumer x = new EnergyConsumer (rdfID , name , EqC , P , Q);
+		return x;
+	}
+	
+	public static PowerTransformerEnd extractPTend (Node node){
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String Trans , BV , name , R , X , B , G , s , v;
+		Trans = BV = name = R = X = B = G = s = v = null;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			name = element.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+			R = element.getElementsByTagName("cim:PowerTransformerEnd.r").item(0).getTextContent();
+			X = element.getElementsByTagName("cim:PowerTransformerEnd.x").item(0).getTextContent();
+			B = element.getElementsByTagName("cim:PowerTransformerEnd.b").item(0).getTextContent();
+			G = element.getElementsByTagName("cim:PowerTransformerEnd.g").item(0).getTextContent();
+			s = element.getElementsByTagName("cim:PowerTransformerEnd.ratedS").item(0).getTextContent();
+			v = element.getElementsByTagName("cim:PowerTransformerEnd.ratedU").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:TransformerEnd.BaseVoltage".equals(childNode.getNodeName())) {
+					Element element1 = (Element) childNode;
+					BV= element1.getAttribute("rdf:resource");
+	            }
+	            if ("cim:PowerTransformerEnd.PowerTransformer".equals(childNode.getNodeName())) {
+	            	Element element1 = (Element) childNode;
+	            	Trans= element1.getAttribute("rdf:resource");
+	            }
+	        }
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		PowerTransformerEnd y = new PowerTransformerEnd (rdfID , name , Trans , BV , R , X , B , G , s , v);
+		return y;
+	}
+	
+	public static Breaker extractBreaker (Node nodeEQ , Node nodeSSH){
+		NodeList childList = nodeEQ.getChildNodes();
+		Element element1 = (Element) nodeEQ;
+		Element element2 = (Element) nodeSSH;
+		
+		String EqC , name , st;
+		EqC = name = st = null;
+		
+		String rdfID = element1.getAttribute("rdf:ID");
+		
+		try{
+			name = element1.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+		
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:Equipment.EquipmentContainer".equals(childNode.getNodeName())) {
+					Element element3 = (Element) childNode;
+					EqC = element3.getAttribute("rdf:resource");
+				} 
+			}
+			st = element2.getElementsByTagName("cim:Switch.open").item(0).getTextContent();
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		Breaker x = new Breaker (rdfID , name , EqC , st);
+		return x;
+	}
+
+	public static RatioTapChanger extractRTC (Node node){
+		Element element = (Element) node;
+		
+		String name , stp;
+		name = stp = null;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			name = element.getElementsByTagName("cim:IdentifiedObject.name").item(0).getTextContent();
+			stp = element.getElementsByTagName("cim:TapChanger.normalStep").item(0).getTextContent();
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		RatioTapChanger x = new RatioTapChanger(rdfID, name , stp);
+		return x;	
+	}
+
+	public static Terminal extractTerm (Node node , int j , ArrayList<ConnectivityNode> cns){
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String CE = null;
+		String ConnNode = null;
+		int ConnID = 0;
+		
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+				if ("cim:Terminal.ConductingEquipment".equals(childNode.getNodeName())) {
+					Element element1 = (Element) childNode;
+					CE= element1.getAttribute("rdf:resource");
+	            }
+				if ("cim:Terminal.ConnectivityNode".equals(childNode.getNodeName())) {
+					Element element1 = (Element) childNode;
+					ConnNode= element1.getAttribute("rdf:resource");
+					for (int k = 0 ; k < cns.size() ; k++){
+						if (ConnNode.substring(1) == cns.get(k).GetrdfID())	{
+							ConnID = cns.get(k).GetID();
+							}
+					}
+				}
+			}
+		}
+		
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		Terminal x = new Terminal (j , rdfID , CE , ConnID);
+		return x;
+	}
+	
+	public static ACLineSegment extractACLS (Node node){
+		NodeList childList = node.getChildNodes();
+		Element element = (Element) node;
+		
+		String BV, l , r , X, g ,b;
+		BV = l = r = X = g = b = null;
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		try{
+			
+			l = element.getElementsByTagName("cim:Conductor.length").item(0).getTextContent();
+			r = element.getElementsByTagName("cim:ACLineSegment.r").item(0).getTextContent();
+			X = element.getElementsByTagName("cim:ACLineSegment.x").item(0).getTextContent();
+			b = element.getElementsByTagName("cim:ACLineSegment.bch").item(0).getTextContent();
+			g = element.getElementsByTagName("cim:ACLineSegment.gch").item(0).getTextContent();
+			for (int i = 0; i < childList.getLength(); i++) {
+				Node childNode = childList.item(i);
+	            if ("cim:ConductingEquipment.BaseVoltage".equals(childNode.getNodeName())) {
+	            	Element element1 = (Element) childNode;
+	                BV= element1.getAttribute("rdf:resource");
+	            }
+			}
+		}
+		catch(NullPointerException e){
+			System.out.println("your file can not be parsed by this");
+		}
+		
+		ACLineSegment x = new ACLineSegment (rdfID , BV , l , r , X , b , g);
+		return x;
+	}
+	
+	public static ConnectivityNode extractCN (Node node , int j){
+		Element element = (Element) node;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		ConnectivityNode x = new ConnectivityNode (rdfID , j);
+		return x;
+	}
+	
+	public static BusbarSection extractBusbar (Node node , int j){
+		Element element = (Element) node;
+		
+		String rdfID = element.getAttribute("rdf:ID");
+		
+		BusbarSection x = new BusbarSection (rdfID , j);
+		return x;
+	}
+	
+}
+
+

@@ -1,0 +1,43 @@
+package assignment1;
+
+public class VoltageLevel {
+	
+		private String ID;
+		private double name;
+		private String substation;
+		private String BaseVoltage;
+		private String sqldrop = "DROP TABLE IF EXISTS VoltageLevels";
+		private String sqlCreate = "CREATE TABLE IF NOT EXISTS VoltageLevels(ID INTEGER NOT NULL, rdfID VARCHAR(37), name DOUBLE , substation VARCHAR(37) , Base_Voltage VARCHAR(37) , PRIMARY KEY(ID))";
+		
+		public VoltageLevel (String id, String nm, String sub, String BV){
+			ID = id;
+			name = Double.parseDouble(nm);
+			substation = sub;
+			BaseVoltage = BV;
+		}
+		
+		public String GetID(){
+			return ID;
+		}
+		
+		public double GetName(){
+			return name;
+		}
+		
+		public String GetSub(){
+			return substation.substring(1);
+		}
+		
+		public String GetBV(){
+			return BaseVoltage.substring(1);
+		}
+		
+		public String DropTable(){
+			return sqldrop;
+		}
+		
+		public String CreateTable(){
+			return sqlCreate;
+		}		
+
+}

@@ -1,0 +1,195 @@
+
+		////////////////////////////////////////////////////////////
+		////////////////////////SQL/////////////////////////////////
+		////////////////////////////////////////////////////////////
+		Connection conn = null;
+		Statement stmt = null;
+		try{
+			// Register JDBC driver
+			Class.forName(JDBC_DRIVER);
+			// Open a connection
+			conn = DriverManager.getConnection(DB_URL+DISABLE_SSL, USER, PASS);
+
+			stmt = conn.createStatement();
+			String sql = "CREATE DATABASE IF NOT EXISTS PowerSystem"; // create database 
+			stmt.executeUpdate(sql);
+
+			// Connect to the created database powersystem and create table breaker
+			conn = DriverManager.getConnection(DB_URL + "PowerSystem"+DISABLE_SSL, USER, PASS);
+			sql = "USE PowerSystem";
+			stmt.executeUpdate(sql);
+				
+			//Base Voltage
+			stmt.executeUpdate(BV.get(0).DropTable()); // Drop table ACLineSegment if exists
+			stmt.executeUpdate(BV.get(0).CreateTable()); // create it if it does not exist
+			
+			for (int i = 0; i < BV.size(); i++){
+				String query = "INSERT INTO BaseVoltages (ID , rdfID , nominal_Voltage)" + "VALUES (? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, BV.get(i).GetrdfID());
+			    preparedStmt.setDouble (3, BV.get(i).GetnV());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Breaker
+			stmt.executeUpdate(Breakers.get(0).DropTable()); 
+			stmt.executeUpdate(Breakers.get(0).CreateTable()); 
+			
+			for (int i = 0; i < BV.size(); i++){
+				String query = "INSERT INTO Breakers (ID , rdfID , name , status , Equipment_Container)" + "VALUES (? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, Breakers.get(i).GetrdfID());
+			    preparedStmt.setString (3, Breakers.get(i).GetName());
+			    preparedStmt.setString (4, Breakers.get(i).GetState());
+			    preparedStmt.setString (5, Breakers.get(i).GetEqCon());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//EnergyConsumer
+			stmt.executeUpdate(EnCons.get(0).DropTable()); 
+			stmt.executeUpdate(EnCons.get(0).CreateTable()); 
+			
+			for (int i = 0; i < EnCons.size(); i++){
+				String query = "INSERT INTO EnergyConsumers (ID , rdfID , name , Equipment_Container , P , Q)" + "VALUES (? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, EnCons.get(i).GetrdfID());
+			    preparedStmt.setString (3, EnCons.get(i).GetName());
+			    preparedStmt.setString (4, EnCons.get(i).GetEqCon());
+			    preparedStmt.setDouble (5, EnCons.get(i).GetP());
+			    preparedStmt.setDouble (6, EnCons.get(i).GetQ());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Generating Units
+			stmt.executeUpdate(GU.get(0).DropTable()); 
+			stmt.executeUpdate(GU.get(0).CreateTable()); 
+			
+			for (int i = 0; i < GU.size(); i++){
+				String query = "INSERT INTO GeneratingUnits (ID , rdfID , name , Equipment_Container , Pmax , Pmin)" + "VALUES (? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, GU.get(i).GetrdfID());
+			    preparedStmt.setString (3, GU.get(i).GetName());
+			    preparedStmt.setString (4, GU.get(i).GetEqCont());
+			    preparedStmt.setDouble (5, GU.get(i).GetPmax());
+			    preparedStmt.setDouble (6, GU.get(i).GetPmin());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Power Transformers
+			stmt.executeUpdate(PTrsf.get(0).DropTable()); 
+			stmt.executeUpdate(PTrsf.get(0).CreateTable()); 
+			
+			for (int i = 0; i < PTrsf.size(); i++){
+				String query = "INSERT INTO PowerTransformers (ID , rdfID , name , Equipment_Container)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, PTrsf.get(i).GetrdfID());
+			    preparedStmt.setString (3, PTrsf.get(i).GetName());
+			    preparedStmt.setString (4, PTrsf.get(i).GetEqCont());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Power Transformer End
+			stmt.executeUpdate(PTEnd.get(0).DropTable()); 
+			stmt.executeUpdate(PTEnd.get(0).CreateTable()); 
+			
+			for (int i = 0; i < PTEnd.size(); i++){
+				String query = "INSERT INTO PowerTransformerEnds (ID , rdfID , name , Transformer , Base_Voltage , r , x )" + "VALUES (? , ? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, PTEnd.get(i).GetrdfID());
+			    preparedStmt.setString (3, PTEnd.get(i).GetName());
+			    preparedStmt.setString (4, PTEnd.get(i).GetTransf());
+			    preparedStmt.setString (5, PTEnd.get(i).GetBV());
+			    preparedStmt.setDouble (6, PTEnd.get(i).GetR());
+			    preparedStmt.setDouble (7, PTEnd.get(i).GetX());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Ratio Tap Changer
+			stmt.executeUpdate(RTC.get(0).DropTable()); 
+			stmt.executeUpdate(RTC.get(0).CreateTable()); 
+			
+			for (int i = 0; i < RTC.size(); i++){
+				String query = "INSERT INTO RatioTapChangers (ID , rdfID , name , step)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, RTC.get(i).GetrdfID());
+			    preparedStmt.setString (3, RTC.get(i).GetName());
+			    preparedStmt.setInt (4, RTC.get(i).GetStep());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Regulating Control
+			stmt.executeUpdate(RCntr.get(0).DropTable()); 
+			stmt.executeUpdate(RCntr.get(0).CreateTable()); 
+			
+			for (int i = 0; i < RCntr.size(); i++){
+				String query = "INSERT INTO RegulatingControls (ID , rdfID , name , target_Value)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, RCntr.get(i).GetrdfID());
+			    preparedStmt.setString (3, RCntr.get(i).GetName());
+			    preparedStmt.setDouble (4, RCntr.get(i).GetnV());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Synchronus Machine
+			stmt.executeUpdate(SynchM.get(0).DropTable()); 
+			stmt.executeUpdate(SynchM.get(0).CreateTable()); 
+			
+			for (int i = 0; i < SynchM.size(); i++){
+				String query = "INSERT INTO SynchronousMachines (ID , rdfID , name , Equipment_Container , Regulating_Control , Generating_Unit , Srated , P , Q)" + "VALUES (? , ? , ? , ? , ? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, SynchM.get(i).GetrdfID());
+			    preparedStmt.setString (3, SynchM.get(i).GetName());
+			    preparedStmt.setString (4, SynchM.get(i).GetEqCont());
+			    preparedStmt.setString (5, SynchM.get(i).GetRegCtrl());
+			    preparedStmt.setString (6, SynchM.get(i).GetRotMcGU());
+			    preparedStmt.setDouble (7, SynchM.get(i).GetSrated());
+			    preparedStmt.setDouble (8, SynchM.get(i).GetP());
+			    preparedStmt.setDouble (9, SynchM.get(i).GetQ());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Substation
+			stmt.executeUpdate(Sub.get(0).DropTable()); 
+			stmt.executeUpdate(Sub.get(0).CreateTable()); 
+			
+			for (int i = 0; i < Sub.size(); i++){
+				String query = "INSERT INTO Substations (ID , rdfID , name , Region)" + "VALUES (? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, Sub.get(i).GetrdfID());
+			    preparedStmt.setString (3, Sub.get(i).GetName());
+			    preparedStmt.setString (4, Sub.get(i).GetRegion());
+			    preparedStmt.executeUpdate();
+			}
+			
+			//Voltage Level
+			stmt.executeUpdate(VL.get(0).DropTable()); 
+			stmt.executeUpdate(VL.get(0).CreateTable()); 
+			
+			for (int i = 0; i < VL.size(); i++){
+				String query = "INSERT INTO VoltageLevels (ID , rdfID , name , substation , Base_Voltage)" + "VALUES (? , ? , ? , ? , ?)";
+				PreparedStatement preparedStmt = conn.prepareStatement(query);
+				preparedStmt.setInt (1, (i+1));
+			    preparedStmt.setString (2, VL.get(i).GetrdfID());
+			    preparedStmt.setDouble (3, VL.get(i).GetName());
+			    preparedStmt.setString (4, VL.get(i).GetSub());
+			    preparedStmt.setString (5, VL.get(i).GetBV());
+			    preparedStmt.executeUpdate();
+			}
+			
+		}catch(SQLException se){
+			//Handle errors for JDBC
+			se.printStackTrace();
+		}catch(Exception e){
+			//Handle errors for Class.forName
+			e.printStackTrace();
+		}

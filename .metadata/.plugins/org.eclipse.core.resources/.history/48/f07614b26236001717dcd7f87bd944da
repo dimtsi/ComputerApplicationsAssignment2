@@ -1,0 +1,74 @@
+package assignment1;
+
+public class PowerTransformerEnd {
+
+	private String ID;
+	private String name;
+	private String Transformer;
+	private String baseVoltage;
+	private double r , x , b , g , S , U;
+	private String sqldrop = "DROP TABLE IF EXISTS PowerTransformerEnds";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS PowerTransformerEnds(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(8) , Transformer VARCHAR(37) , Base_Voltage VARCHAR(37) , r DOUBLE , x DOUBLE , PRIMARY KEY(ID))";
+	
+	public PowerTransformerEnd (String id, String nm, String trnsf, String BV , String R, String X ,String B , String G , String s , String u){
+		ID = id;
+		name = nm; 
+		Transformer = trnsf;
+		baseVoltage = BV;
+		r = Double.parseDouble(R);
+		x = Double.parseDouble(X);
+		b = Double.parseDouble(B);
+		g = Double.parseDouble(G);
+		S = Double.parseDouble(s);
+		U = Double.parseDouble(u);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public String GetTransf(){
+		return Transformer.substring(1);
+	}
+	
+	public String GetBV(){
+		return baseVoltage.substring(1);
+	}
+	
+	public double GetR(){
+		return r;
+	}
+	
+	public double GetX(){
+		return x;
+	}
+	
+	public double GetB(){
+		return b;
+	}
+	
+	public double GetG(){
+		return g;
+	}
+	
+	public double GetS(){
+		return S;
+	}
+	
+	public double GetU(){
+		return U;
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}

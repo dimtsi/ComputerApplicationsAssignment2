@@ -1,0 +1,37 @@
+package assignment1;
+
+public class PowerTransformer {
+	
+	private String ID;
+	private String name;
+	private String EqCont;
+	private String sqldrop = "DROP TABLE IF EXISTS PowerTransformers";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS PowerTransformers(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(8) , Equipment_Container VARCHAR(37) , PRIMARY KEY(ID))";
+	
+	public PowerTransformer(String id, String nm , String eq ){
+		ID = id;
+		name = nm;
+		EqCont = eq;
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public String GetEqCont(){
+		return EqCont.substring(1);
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}

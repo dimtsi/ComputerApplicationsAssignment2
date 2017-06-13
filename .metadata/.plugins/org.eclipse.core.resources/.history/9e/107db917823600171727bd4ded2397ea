@@ -1,0 +1,30 @@
+package assignment1;
+
+public class BaseVoltage {
+
+	private String ID;
+	private double nominalV;
+	private String sqldrop = "DROP TABLE IF EXISTS BaseVoltages";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS BaseVoltages(ID INTEGER NOT NULL, rdfID VARCHAR(37), nominal_Voltage Double , PRIMARY KEY(ID))";
+	
+	public BaseVoltage(String id, String nV){
+		ID = id;
+		nominalV = Double.parseDouble(nV);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public double GetnV(){
+		return nominalV;
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+}

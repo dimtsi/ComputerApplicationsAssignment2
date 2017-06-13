@@ -1,0 +1,21 @@
+package assignment1;
+
+public class BusbarSection {
+	
+	private String rdfID;
+	private int ID;
+	
+	public BusbarSection (String rdfid , int id){
+		rdfID = rdfid;
+		ID = id;
+	}
+	
+	public String GetrdfID(){
+		return rdfID;
+	}
+	
+	public int GetID(){
+		return ID;
+	}
+	
+}

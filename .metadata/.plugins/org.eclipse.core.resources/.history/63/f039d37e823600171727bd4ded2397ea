@@ -1,0 +1,49 @@
+package assignment1;
+
+public class GeneratingUnit {
+	
+	private String ID;
+	private String name;
+	private double Pmax;
+	private double Pmin;
+	private String equipmentCont;
+	private String sqldrop = "DROP TABLE IF EXISTS GeneratingUnits";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS GeneratingUnits(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(14) , Equipment_Container VARCHAR(37) , Pmax DOUBLE , Pmin DOUBLE , PRIMARY KEY(ID))";
+	
+	public GeneratingUnit (String id, String nm, String Pmx, String Pmn, String EC){
+		ID = id;
+		name = nm;
+		Pmax = Double.parseDouble(Pmx);
+		Pmin = Double.parseDouble(Pmn);
+		equipmentCont = EC;
+	}
+
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}	
+	
+	public double GetPmax(){
+		return Pmax;
+	}
+	
+	public double GetPmin(){
+		return Pmin;
+	}
+	
+	public String GetEqCont(){
+		return equipmentCont.substring(1);
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}

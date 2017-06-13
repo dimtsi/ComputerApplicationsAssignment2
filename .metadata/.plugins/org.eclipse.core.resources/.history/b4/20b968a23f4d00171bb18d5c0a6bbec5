@@ -1,0 +1,276 @@
+package assignment2;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
+
+import javax.swing.JOptionPane;
+
+import java.util.ArrayList;
+
+public class Amain {
+	
+	// JDBC driver name and database URL
+	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+	static final String DB_URL = "jdbc:mysql://localhost/";
+	static final String DISABLE_SSL = "?useSSL=false";
+	
+	
+	public static void main (String[] agrs) throws ClassNotFoundException, SQLException{
+		// Database credentials
+		String User = JOptionPane.showInputDialog("Enter your SQL server username");
+		String Pass = JOptionPane.showInputDialog("Enter your SQL server password");
+		
+		ArrayList<substations> sub = getsubstation(User , Pass); //input of the substations table to java 
+		ArrayList<measurement> meas = getmeasure(User , Pass);	//input of the measurements table to java 
+		ArrayList<measurement> anValues = getanValues(User , Pass);	//input of the measurements table to java 
+		
+		ArrayList<Double> times = new ArrayList<>(); // all the time values when measurements occurred
+		
+		for (int i = 0 ; i < meas.size() ; i++){
+			if ( (i%(sub.size()*2)) == 0) { times.add(meas.get(i).GetTime()); }
+		}
+		
+////// kNN clustering
+		
+		
+		//creating 4 random clusters
+		int k ;
+		double checksumV , checksumA;
+		checksumV = checksumA = 0;
+		double [][] k1 = new double[sub.size()][2]; //cluster 1
+		for (int i = 0 ; i < sub.size() ; i++){
+			k1[i][0] = meas.get(i*2).GetValue();
+			checksumV = checksumV + k1[i][0];
+			k1[i][1] = meas.get(i*2+1).GetValue();
+			checksumA = checksumA + k1[i][1];
+		}
+		
+		double checksumV2 , checksumA2;
+		k = -1+times.size()/3;
+		double [][] k2 = new double[sub.size()][2]; //cluster 2
+		while (true){
+			checksumV2 = checksumA2 = 0;
+			
+			for (int i = 0 ; i < sub.size() ; i++){
+				k2[i][0] = meas.get(k*2*sub.size()+i*2).GetValue();
+				checksumV2 = checksumV2 + k2[i][0];
+				k2[i][1] = meas.get(k*2*sub.size()+i*2+1).GetValue();
+				checksumA2 = checksumA2 + k2[i][1];
+			}
+			if ( (checksumV2 != checksumV) || (checksumA2 != checksumA)) { break ;} // check if the cluster is not identical to the earlier one
+			else {k = k + 1;}
+		}
+		
+		double checksumV3 , checksumA3;
+		k  = -2+2*times.size()/3;
+		double [][] k3 = new double[sub.size()][2]; //cluster 3
+		while (true){
+			checksumV3 = checksumA3 = 0;
+			
+			for (int i = 0 ; i < sub.size() ; i++){
+				k3[i][0] = meas.get(k*2*sub.size()+i*2).GetValue();
+				checksumV3 = checksumV3 + k3[i][0];
+				k3[i][1] = meas.get(k*2*sub.size()+i*2+1).GetValue();
+				checksumA3 = checksumA3 + k3[i][1];
+			}
+			if ( ((checksumV3 != checksumV) || (checksumA3 != checksumA)) && ((checksumV3 != checksumV2) || (checksumA3 != checksumA2)) ) { break ;}
+			else {k = k + 1;}
+		}
+		
+		
+		double checksumV4 , checksumA4;
+		k = -5+times.size();
+		double [][] k4 = new double[sub.size()][2]; //cluster 4
+		while (true){
+			checksumV4 = checksumA4 = 0;
+			
+			for (int i = 0 ; i < sub.size() ; i++){
+				k4[i][0] = meas.get(k*2*sub.size()+i*2).GetValue();
+				checksumV4 = checksumV4 + k4[i][0];
+				k4[i][1] = meas.get(k*2*sub.size()+i*2+1).GetValue();
+				checksumA4 = checksumA4 + k4[i][1];
+			}
+			if ( ((checksumV4 != checksumV) || (checksumA4 != checksumA)) && ((checksumV4 != checksumV2) || (checksumA4 != checksumA2)) && ((checksumV4 != checksumV3) || (checksumA4 != checksumA3)) ) {break ;}
+			else {k = k - 1;}
+		}
+		
+// k means clustering
+		
+		ArrayList<Integer> cbelongs = new ArrayList<>(); // which cluster each observation belongs to
+		ArrayList<Integer> obs1 = new ArrayList<>(); // arrayLists including the observations(time measurements) 
+		ArrayList<Integer> obs2 = new ArrayList<>(); // closest to each cluster
+		ArrayList<Integer> obs3 = new ArrayList<>();
+		ArrayList<Integer> obs4 = new ArrayList<>();
+		for (int i = 0 ; i < times.size() ; i ++){ cbelongs.add(0); } // initialize the ArrayList 
+		
+		
+		double dis1 , dis2 , dis3 , dis4;
+		boolean check;
+		
+		while (true){
+			check = true;
+			obs1 = new ArrayList<Integer>(); // arrayLists including the observations(time measurements) 
+			obs2 = new ArrayList<Integer>(); // closest to each cluster
+			obs3 = new ArrayList<Integer>();
+			obs4 = new ArrayList<Integer>();
+			for (int i = 0 ; i < times.size() ; i++){
+				dis1 = dis2 = dis3 = dis4 = 0; // distances to each cluster
+				
+				for (int j = 0; j < sub.size() ; j++){
+					dis1 = dis1 + Math.pow((k1[j][0] - meas.get(i*2*sub.size()+2*j).GetValue()), 2) //voltages
+							+ Math.pow((k1[j][1] - meas.get(i*2*sub.size()+2*j+1).GetValue()), 2); //angles
+					dis2 = dis2 + Math.pow((k2[j][0] - meas.get(i*2*sub.size()+2*j).GetValue()), 2) 
+							+ Math.pow((k2[j][1] - meas.get(i*2*sub.size()+2*j+1).GetValue()), 2); 
+					dis3 = dis3 + Math.pow((k3[j][0] - meas.get(i*2*sub.size()+2*j).GetValue()), 2) 
+							+ Math.pow((k3[j][1] - meas.get(i*2*sub.size()+2*j+1).GetValue()), 2); 
+					dis4 = dis4 + Math.pow((k4[j][0] - meas.get(i*2*sub.size()+2*j).GetValue()), 2) 
+							+ Math.pow((k4[j][1] - meas.get(i*2*sub.size()+2*j+1).GetValue()), 2); 
+				}
+
+				if ( (Math.sqrt(dis1) < Math.sqrt(dis2)) && (Math.sqrt(dis1) < Math.sqrt(dis3)) && (Math.sqrt(dis1) < Math.sqrt(dis4)) ) { //check for the smallest distance
+					obs1.add(i); 
+					if (cbelongs.get(i) != 1) { check = false; } //check if this meas was in this cluster before
+					cbelongs.set(i , 1); // state to which cluster the meas belongs now
+				}
+				if ( (Math.sqrt(dis2) < Math.sqrt(dis1)) && (Math.sqrt(dis2) < Math.sqrt(dis3)) && (Math.sqrt(dis2) < Math.sqrt(dis4)) ) { 
+					obs2.add(i); 
+					if (cbelongs.get(i) != 2) { check = false; }
+					cbelongs.set(i , 2);
+				}
+				if ( (Math.sqrt(dis3) < Math.sqrt(dis2)) && (Math.sqrt(dis3) < Math.sqrt(dis1)) && (Math.sqrt(dis3) < Math.sqrt(dis4)) ) { 
+					obs3.add(i); 
+					if (cbelongs.get(i) != 3) { check = false; }
+					cbelongs.set(i , 3);
+				}
+				if ( (Math.sqrt(dis4) < Math.sqrt(dis2)) && (Math.sqrt(dis4) < Math.sqrt(dis3)) && (Math.sqrt(dis4) < Math.sqrt(dis1)) ) { 
+					obs4.add(i); 
+					if (cbelongs.get(i) != 4) { check = false; }
+					cbelongs.set(i , 4);
+				}	
+			}
+			
+			for (int h = 0; h < sub.size() ; h++){// erase all previous inputs to clusters (to calculate average)
+				k1[h][0] = k1[h][1] = k2[h][0] = k2[h][1] = k3[h][0] = k3[h][1] = k4[h][0] = k4[h][1] = 0; 	
+			}
+			
+			for (int l = 0; l < obs1.size() ; l++){
+				for (int h = 0; h < sub.size() ; h++){
+					k1[h][0] = k1[h][0] + meas.get(obs1.get(l)*2*sub.size()+2*h).GetValue();// sum of V measurements in cluster1/substation
+					k1[h][1] = k1[h][1] + meas.get(obs1.get(l)*2*sub.size()+2*h+1).GetValue();// sum of è measurements in cluster1/substation
+				}
+			}
+			
+			for (int l = 0; l < obs2.size() ; l++){
+				for (int h = 0; h < sub.size() ; h++){
+					k2[h][0] = k2[h][0] + meas.get(obs2.get(l)*2*sub.size()+2*h).GetValue();
+					k2[h][1] = k2[h][1] + meas.get(obs2.get(l)*2*sub.size()+2*h+1).GetValue();
+				}
+			}
+			
+			for (int l = 0; l < obs3.size() ; l++){
+				for (int h = 0; h < sub.size() ; h++){
+					k3[h][0] = k3[h][0] + meas.get(obs3.get(l)*2*sub.size()+2*h).GetValue();
+					k3[h][1] = k3[h][1] + meas.get(obs3.get(l)*2*sub.size()+2*h+1).GetValue();
+				}
+			}
+			
+			for (int l = 0; l < obs4.size() ; l++){
+				for (int h = 0; h < sub.size() ; h++){
+					k4[h][0] = k4[h][0] + meas.get(obs4.get(l)*2*sub.size()+2*h).GetValue();
+					k4[h][1] = k4[h][1] + meas.get(obs4.get(l)*2*sub.size()+2*h+1).GetValue();
+				}
+			}
+			for (int h = 0; h < sub.size() ; h++){// calculate average for cluster values
+				k1[h][0] = k1[h][0]/obs1.size();
+				k1[h][1] = k1[h][1]/obs1.size();
+				k2[h][0] = k2[h][0]/obs2.size();
+				k2[h][1] = k2[h][1]/obs2.size();
+				k3[h][0] = k3[h][0]/obs3.size();
+				k3[h][1] = k3[h][1]/obs3.size();
+				k4[h][0] = k4[h][0]/obs4.size();
+				k4[h][1] = k4[h][1]/obs4.size();
+			}
+			
+			if(check){ break; } // if no measurement moved cluster then clustering complete
+		}
+		
+//		System.out.println(obs1.size());
+//		System.out.println(obs2.size());
+//		System.out.println(obs3.size());
+//		System.out.println(obs4.size());
+//		for (int i=0;i<cbelongs.size();i++){
+//			System.out.println(cbelongs.get(i));
+//		}
+		
+		
+		
+		
+	}
+	
+	public static ArrayList<substations> getsubstation(String USER , String PASS) throws ClassNotFoundException, SQLException { 
+		// Register JDBC driver
+		Class.forName(JDBC_DRIVER);
+		// Open a connection
+		Connection conn = DriverManager.getConnection(DB_URL+DISABLE_SSL, USER, PASS);
+	    Statement stm;
+	    stm = conn.createStatement();
+	    String sqll = "use subtables;";
+	    stm.executeUpdate(sqll);
+	    String sql = "Select * From substations;";
+	    ResultSet rst;
+	    rst = stm.executeQuery(sql);
+	    ArrayList<substations> subList = new ArrayList<substations>();
+	    while (rst.next()) {
+	    	substations sub = new substations(rst.getString("rdfid"), rst.getString("name"), rst.getString("region_id"));
+	        subList.add(sub);
+	    }
+	    conn.close();
+	    return subList;
+	}
+	public static ArrayList<measurement> getmeasure(String USER , String PASS) throws ClassNotFoundException, SQLException { 
+		// Register JDBC driver
+		Class.forName(JDBC_DRIVER);
+		// Open a connection
+		Connection conn = DriverManager.getConnection(DB_URL+DISABLE_SSL, USER, PASS);
+	    Statement stm;
+	    stm = conn.createStatement();
+	    String sqll = "USE subtables;";
+	    stm.executeUpdate(sqll);
+	    String sql = "SELECT * FROM measurements ORDER BY time LIMIT 0,10000;";
+	    ResultSet rst;
+	    rst = stm.executeQuery(sql);
+	    ArrayList<measurement> measList = new ArrayList<measurement>();
+	    while (rst.next()) {
+	    	measurement meas = new measurement(rst.getString("rdfid"), rst.getString("name"), rst.getDouble("time"), rst.getDouble("value"), rst.getString("sub_rdfid"));
+	        measList.add(meas);
+	    }
+	    
+	    conn.close();
+	    return measList;
+	}
+	public static ArrayList<measurement> getanValues(String USER , String PASS) throws ClassNotFoundException, SQLException { 
+		// Register JDBC driver
+		Class.forName(JDBC_DRIVER);
+		// Open a connection
+		Connection conn = DriverManager.getConnection(DB_URL+DISABLE_SSL, USER, PASS);
+	    Statement stm;
+	    stm = conn.createStatement();
+	    String sqll = "USE subtables;";
+	    stm.executeUpdate(sqll);
+	    String sql = "SELECT * FROM analog_values ORDER BY time LIMIT 0,10000;";
+	    ResultSet rst;
+	    rst = stm.executeQuery(sql);
+	    ArrayList<measurement> anVList = new ArrayList<measurement>();
+	    while (rst.next()) {
+	    	measurement anV = new measurement(rst.getString("rdfid"), rst.getString("name"), rst.getDouble("time"), rst.getDouble("value"), rst.getString("sub_rdfid"));
+	        anVList.add(anV);
+	    }
+	    
+	    conn.close();
+	    return anVList;
+	}
+
+}

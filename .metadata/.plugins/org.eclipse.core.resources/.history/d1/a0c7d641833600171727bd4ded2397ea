@@ -1,0 +1,67 @@
+package assignment1;
+
+public class SynchronousMachine {
+	
+	private String ID;
+	private String name;
+	private String EqCont;
+	private String RegCtrl;
+	private String RotMGU;
+	private double Srated;
+	private double P;
+	private double Q;
+	private String sqldrop = "DROP TABLE IF EXISTS SynchronousMachines";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS SynchronousMachines(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(12) , Equipment_Container VARCHAR(37) , Regulating_Control VARCHAR(37) , Generating_Unit VARCHAR(37) , Srated DOUBLE , P DOUBLE , Q DOUBLE ,  PRIMARY KEY(ID))";
+	
+	public SynchronousMachine (String id, String nm, String eq, String rc, String rm, String s, String p, String q ){
+		ID = id;
+		name = nm; 
+		EqCont = eq;
+		RegCtrl = rc;
+		RotMGU = rm;
+		Srated = Double.parseDouble(s);
+		P = Double.parseDouble(p);
+		Q = Double.parseDouble(q);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public String GetEqCont(){
+		return EqCont.substring(1);
+	}
+	
+	public String GetRegCtrl(){
+		return RegCtrl.substring(1);
+	}
+	
+	public String GetRotMcGU(){
+		return RotMGU.substring(1);
+	}
+	
+	public double GetSrated(){
+		return Srated;
+	}
+	
+	public double GetP(){
+		return P;
+	}
+	
+	public double GetQ(){
+		return Q;
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+
+}

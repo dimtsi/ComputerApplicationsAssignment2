@@ -1,0 +1,43 @@
+package assignment1;
+
+public class Breaker {
+
+	private String ID;
+	private String name;
+	private String EqCont;
+	private String State;
+	private String sqldrop = "DROP TABLE IF EXISTS Breakers";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS Breakers(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(14) , status VARCHAR(5) , Equipment_Container VARCHAR(37) , PRIMARY KEY(ID))";
+	
+	public Breaker (String id, String nm, String eq, String state ){
+		ID = id;
+		name = nm; 
+		EqCont = eq;
+		State = state;
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public String GetEqCon(){
+		return EqCont.substring(1);
+	}
+	
+	public String GetState(){
+		return State;
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}

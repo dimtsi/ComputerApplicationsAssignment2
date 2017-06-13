@@ -1,0 +1,33 @@
+package assignment1;
+
+public class Terminal {
+	
+	private int ID;
+	private String rdfID;
+	private String CondEq;
+	private String ConnNode;
+
+	public Terminal(int id , String rdfid, String ce , String connNode){
+		ID = id;
+		rdfID = rdfid;
+		CondEq = ce;
+		ConnNode = connNode;
+	}
+	
+	public int GetID(){
+		return ID;
+	}
+	
+	public String GetrdfID(){
+		return rdfID;
+	}
+	
+	public String GetCondEq(){
+		return CondEq.substring(1);
+	}	
+	
+	public String GetConnNode(){
+		return ConnNode.substring(1);
+	}
+	
+}

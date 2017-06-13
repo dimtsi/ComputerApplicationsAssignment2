@@ -1,0 +1,37 @@
+package assignment1;
+
+public class RatioTapChanger {
+
+	private String ID;
+	private String name;
+	private int step;
+	private String sqldrop = "DROP TABLE IF EXISTS RatioTapChangers";
+	private String sqlCreate = "CREATE TABLE IF NOT EXISTS RatioTapChangers(ID INTEGER NOT NULL, rdfID VARCHAR(37), name VARCHAR(8) , step INT , PRIMARY KEY(ID))";
+	
+	public RatioTapChanger (String id, String nm, String Step){
+		ID = id;
+		name = nm;
+		step = Integer.parseInt(Step);
+	}
+	
+	public String GetID(){
+		return ID;
+	}
+	
+	public String GetName(){
+		return name;
+	}
+	
+	public int GetStep(){
+		return step;
+	}
+	
+	public String DropTable(){
+		return sqldrop;
+	}
+	
+	public String CreateTable(){
+		return sqlCreate;
+	}
+	
+}
